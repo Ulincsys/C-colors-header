@@ -23,4 +23,5 @@ int main() {
     j = nextColorCodeEnd(str, i);
     printf("Second capture group: %d, %d\n", i, j);
     cprintf("This &(_br_white)&&(blue)&is&(reset)& a&(_reset)& %d test of the &(green)&cprintf()&(reset)& &(_black)&function\n", 359);
+    cprintf("&(black)&Annoyingly, ANSI black is not the same as terminal black");
 }

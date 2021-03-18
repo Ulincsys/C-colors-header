@@ -45,7 +45,7 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ fg;
     struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_BACKGROUND__ bg;
     const char *reset;
-} Color = {
+} Color_t = {
     {
         "30",
         "31",
@@ -87,130 +87,134 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     "\x1b[0m" // resets BG and FG
 };
 
-typedef struct __ANSI_COLOR_ESCAPE_CODE__ {
+const int __COLOR_COUNT__ = 9;
+const char *__COLOR_HR_FG__[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
+const char *__COLOR_HR_BG__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
+
+typedef struct {
     char fg[20];
     char bg[20];
     char code[20];
 } ColorCode;
 
-int numColors = 9;
-char *colors[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
-char *br_colors[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
+// const int numColors = 9;
+// char *colors[] = ;
+// char *br_colors[] = ;
 
-int findColorIndex(char *color) {
-    for(int i = 0; i < numColors; ++i) {
-        if(!strcmp(color, colors[i])) {
+int __FIND_COLOR_INDEX__(char *color) {
+    for(int i = 0; i < __COLOR_COUNT__; ++i) {
+        if(!strcmp(color, __COLOR_HR_FG__[i])) {
             return i;
         }
     }
     return -1;
 }
 
-int findBRColorIndex(char *color) {
-    for(int i = 0; i < numColors; ++i) {
-        if(!strcmp(color, br_colors[i])) {
+int __FIND_BACKGROUND_COLOR_INDEX__(char *color) {
+    for(int i = 0; i < __COLOR_COUNT__; ++i) {
+        if(!strcmp(color, __COLOR_HR_BG__[i])) {
             return i;
         }
     }
     return -1;
 }
 
-const char* getColorCode(char *color, int isFG) {
+const char* __GET_CONST_COLOR_CODE__(char *color, int isFG) {
     int colorIndex;
-    if((colorIndex = findColorIndex(color)) != -1) {
+    if((colorIndex = __FIND_COLOR_INDEX__(color)) != -1) {
         if(isFG) {
             switch(colorIndex) {
                 case 0:
-                    return Color.fg.black;
+                    return Color_t.fg.black;
                 case 1:
-                    return Color.fg.red;
+                    return Color_t.fg.red;
                 case 2:
-                    return Color.fg.green;
+                    return Color_t.fg.green;
                 case 3:
-                    return Color.fg.yellow;
+                    return Color_t.fg.yellow;
                 case 4:
-                    return Color.fg.blue;
+                    return Color_t.fg.blue;
                 case 5:
-                    return Color.fg.magenta;
+                    return Color_t.fg.magenta;
                 case 6:
-                    return Color.fg.cyan;
+                    return Color_t.fg.cyan;
                 case 7:
-                    return Color.fg.white;
+                    return Color_t.fg.white;
                 case 8:
-                    return Color.fg.reset;
+                    return Color_t.fg.reset;
             }
         } else {
             switch(colorIndex) {
                 case 0:
-                    return Color.bg.black;
+                    return Color_t.bg.black;
                 case 1:
-                    return Color.bg.red;
+                    return Color_t.bg.red;
                 case 2:
-                    return Color.bg.green;
+                    return Color_t.bg.green;
                 case 3:
-                    return Color.bg.yellow;
+                    return Color_t.bg.yellow;
                 case 4:
-                    return Color.bg.blue;
+                    return Color_t.bg.blue;
                 case 5:
-                    return Color.bg.magenta;
+                    return Color_t.bg.magenta;
                 case 6:
-                    return Color.bg.cyan;
+                    return Color_t.bg.cyan;
                 case 7:
-                    return Color.bg.white;
+                    return Color_t.bg.white;
                 case 8:
-                    return Color.bg.reset;
+                    return Color_t.bg.reset;
             }
         }
-    } else if((colorIndex = findBRColorIndex(color)) != -1) {
+    } else if((colorIndex = __FIND_BACKGROUND_COLOR_INDEX__(color)) != -1) {
         if(isFG) {
             switch(colorIndex) {
                 case 0:
-                    return Color.fg.br_black;
+                    return Color_t.fg.br_black;
                 case 1:
-                    return Color.fg.br_red;
+                    return Color_t.fg.br_red;
                 case 2:
-                    return Color.fg.br_green;
+                    return Color_t.fg.br_green;
                 case 3:
-                    return Color.fg.br_yellow;
+                    return Color_t.fg.br_yellow;
                 case 4:
-                    return Color.fg.br_blue;
+                    return Color_t.fg.br_blue;
                 case 5:
-                    return Color.fg.br_magenta;
+                    return Color_t.fg.br_magenta;
                 case 6:
-                    return Color.fg.br_cyan;
+                    return Color_t.fg.br_cyan;
                 case 7:
-                    return Color.fg.br_white;
+                    return Color_t.fg.br_white;
                 case 8:
-                    return Color.fg.reset;
+                    return Color_t.fg.reset;
             }
         } else {
             switch(colorIndex) {
                 case 0:
-                    return Color.bg.br_black;
+                    return Color_t.bg.br_black;
                 case 1:
-                    return Color.bg.br_red;
+                    return Color_t.bg.br_red;
                 case 2:
-                    return Color.bg.br_green;
+                    return Color_t.bg.br_green;
                 case 3:
-                    return Color.bg.br_yellow;
+                    return Color_t.bg.br_yellow;
                 case 4:
-                    return Color.bg.br_blue;
+                    return Color_t.bg.br_blue;
                 case 5:
-                    return Color.bg.br_magenta;
+                    return Color_t.bg.br_magenta;
                 case 6:
-                    return Color.bg.br_cyan;
+                    return Color_t.bg.br_cyan;
                 case 7:
-                    return Color.bg.br_white;
+                    return Color_t.bg.br_white;
                 case 8:
-                    return Color.bg.reset;
+                    return Color_t.bg.reset;
             }
         }
     }
     return NULL;
 }
 
-ColorCode singleColor(char *color, int isFG) {
-    const char *CC = getColorCode(color, isFG);
+ColorCode singleColorCode(char *color, int isFG) {
+    const char *CC = __GET_CONST_COLOR_CODE__(color, isFG);
     if(!CC) {
         return (ColorCode){ "\0", "\0", "\0" };
     }
@@ -234,17 +238,17 @@ ColorCode singleColor(char *color, int isFG) {
     return cc;
 }
 
-ColorCode BGColor(char *color) {
-    return singleColor(color, 0);
+ColorCode toBackgroundColorCode(char *color) {
+    return singleColorCode(color, 0);
 }
 
-ColorCode FGColor(char *color) {
-    return singleColor(color, 1);
+ColorCode toForegroundColorCode(char *color) {
+    return singleColorCode(color, 1);
 }
 
-ColorCode Colors(char *foreground, char *background) {
-    const char *fgcc = getColorCode(foreground, 1);
-    const char *bgcc = getColorCode(background, 0);
+ColorCode toColorCodes(char *foreground, char *background) {
+    const char *fgcc = __GET_CONST_COLOR_CODE__(foreground, 1);
+    const char *bgcc = __GET_CONST_COLOR_CODE__(background, 0);
     if(!fgcc || !bgcc) {
         return (ColorCode){ "\0", "\0", "\0" };
     }
@@ -324,9 +328,9 @@ ColorCode getColorFromCapture(const char *cursor) {
     strncpy(buffer, cursor, i - 1);
     buffer[i - 1] = '\0';
     if(*buffer == '_') {
-        return BGColor(buffer + 1);
+        return toBackgroundColorCode(buffer + 1);
     } else {
-        return FGColor(buffer);
+        return toForegroundColorCode(buffer);
     }
 }
 
@@ -354,8 +358,8 @@ int cvfprintf(FILE *stream, const char *format, va_list args) {
             strncpy(buffer + index, cursor, remaining);
             index += remaining;
         }
-        strncpy(buffer + index, Color.reset, strlen(Color.reset));
-        index += strlen(Color.reset);
+        strncpy(buffer + index, Color_t.reset, strlen(Color_t.reset));
+        index += strlen(Color_t.reset);
         buffer[index] = '\0';
         return vfprintf(stream, buffer, args);
     }
