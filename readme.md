@@ -6,7 +6,7 @@ TODO; This documentation is incomplete
 ## Usage
 This header provides an implementation for the set of [4-bit ANSI color escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors), in the form of a struct (Color) containing `const char *` representations of all of the codes required for constructing Background ; Foreground color pairs. 
 
-There are several main functions included in the header.
+There are several primary functions included in the header.
 * `int cprintf(const char *format, ...);`
 	* A wrapper for `cvfprintf()` which passes `stdout` along with the provided `va_list` and format string to `cvfprintf()`
 	* The equivalent of `printf()`, but with color!
