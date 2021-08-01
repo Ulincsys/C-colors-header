@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+// Container for foreground color code aliases
 struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ {
     const char *black;
     const char *red;
@@ -21,6 +22,7 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ {
     const char *reset;
 };
 
+// Container for background color code aliases
 struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_BACKGROUND__ {
     const char *black;
     const char *red;
@@ -40,6 +42,14 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_BACKGROUND__ {
     const char *br_white;
     const char *reset;
 };
+
+/*  Color escape sequences are contained in the Color_t struct, aliased by their
+    name via a struct member. ANSI color codes are escaped with "\x1b[", but for
+    simplicity only the integer portion of the code is contained here for colors
+    (as string literals).
+
+    https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+*/
 
 struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ fg;
@@ -87,9 +97,18 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     "\x1b[0m" // resets BG and FG
 };
 
+/*  Immutable definitions for simplifying the transport of color information
+    between library functions.
+*/
+
 const int __COLOR_COUNT__ = 9;
-const char *__COLOR_HR_FG__[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
-const char *__COLOR_HR_BG__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
+const char *__COLOR_HR_RG__[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
+const char *__COLOR_HR_BR__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
+
+/*  Mutable struct type to transport color codes as objects. Struct members "fg"
+    and "bg" are string representations of the respective colors defined by the
+    color code held in the code member.
+*/
 
 typedef struct {
     char fg[20];
@@ -97,29 +116,40 @@ typedef struct {
     char code[20];
 } ColorCode;
 
-// const int numColors = 9;
-// char *colors[] = ;
-// char *br_colors[] = ;
+#define NOCOLOR (ColorCode){ "\0", "\0", "\0" }
 
-int __FIND_COLOR_INDEX__(char *color) {
+/*  Returns the index of the given color in the global color index array. Will
+    return -1 if the color name is invalid
+*/
+
+int __FIND_COLOR_INDEX__(const char *color) {
     for(int i = 0; i < __COLOR_COUNT__; ++i) {
-        if(!strcmp(color, __COLOR_HR_FG__[i])) {
+        if(!strcmp(color, __COLOR_HR_RG__[i])) {
             return i;
         }
     }
     return -1;
 }
 
-int __FIND_BACKGROUND_COLOR_INDEX__(char *color) {
+/*  Returns the index of the given bright color in the global color index array.
+    Will return -1 if the color name is invalid
+*/
+
+int __FIND_BRIGHT_COLOR_INDEX__(const char *color) {
     for(int i = 0; i < __COLOR_COUNT__; ++i) {
-        if(!strcmp(color, __COLOR_HR_BG__[i])) {
+        if(!strcmp(color, __COLOR_HR_BR__[i])) {
             return i;
         }
     }
     return -1;
 }
 
-const char* __GET_CONST_COLOR_CODE__(char *color, int isFG) {
+/*  Probably would be just as well done with a static array, but I was really
+    tied to the idea of using a struct for everything and I like how it turned
+    out.
+*/
+
+const char* __GET_CONST_COLOR_CODE__(const char *color, int isFG) {
     int colorIndex;
     if((colorIndex = __FIND_COLOR_INDEX__(color)) != -1) {
         if(isFG) {
@@ -165,7 +195,7 @@ const char* __GET_CONST_COLOR_CODE__(char *color, int isFG) {
                     return Color_t.bg.reset;
             }
         }
-    } else if((colorIndex = __FIND_BACKGROUND_COLOR_INDEX__(color)) != -1) {
+    } else if((colorIndex = __FIND_BRIGHT_COLOR_INDEX__(color)) != -1) {
         if(isFG) {
             switch(colorIndex) {
                 case 0:
@@ -213,10 +243,15 @@ const char* __GET_CONST_COLOR_CODE__(char *color, int isFG) {
     return NULL;
 }
 
-ColorCode singleColorCode(char *color, int isFG) {
+/*  Composes and returns a ColorCode struct with either a foreground or
+    background color code defined, as specified by the "isFG" parameter, or
+    NOCOLOR if it does not exist.
+*/
+
+ColorCode parseColorCode(const char *color, int isFG) {
     const char *CC = __GET_CONST_COLOR_CODE__(color, isFG);
     if(!CC) {
-        return (ColorCode){ "\0", "\0", "\0" };
+        return NOCOLOR;
     }
     ColorCode cc;
     char *template = "\x1b[";
@@ -238,19 +273,31 @@ ColorCode singleColorCode(char *color, int isFG) {
     return cc;
 }
 
-ColorCode toBackgroundColorCode(char *color) {
-    return singleColorCode(color, 0);
+/*  Composes and returns a ColorCode struct with a background color defined, or
+    NOCOLOR if it does not exist.
+*/
+
+ColorCode parseBackgroundColorCode(const char *color) {
+    return parseColorCode(color, 0);
 }
 
-ColorCode toForegroundColorCode(char *color) {
-    return singleColorCode(color, 1);
+/*  Composes and returns a ColorCode struct with a foreground color defined, or
+    NOCOLOR if it does not exist.
+*/
+
+ColorCode parseForegroundColorCode(const char *color) {
+    return parseColorCode(color, 1);
 }
 
-ColorCode toColorCodes(char *foreground, char *background) {
+/*  Composes and returns a ColorCode struct with both a foreground and
+    background color code defined, or NOCOLOR if either does not exist.
+*/
+
+ColorCode parseColorCodes(const char *foreground, const char *background) {
     const char *fgcc = __GET_CONST_COLOR_CODE__(foreground, 1);
     const char *bgcc = __GET_CONST_COLOR_CODE__(background, 0);
     if(!fgcc || !bgcc) {
-        return (ColorCode){ "\0", "\0", "\0" };
+        return NOCOLOR;
     }
     ColorCode cc;
     char *template = "\x1b[";
@@ -271,12 +318,20 @@ ColorCode toColorCodes(char *foreground, char *background) {
     return cc;
 }
 
-// Capture groups look like "&(Color)&" for foreground and "&(_color)&" for background
+/*  Counts the number of color code capture groups contained within a character
+    string. Capture groupd begin with a "&(" and end with a ")&", and capture
+    groups may not contain other capture groups. Everything within a capture
+    group is considered to be a color code. Will parse until a null terminator
+    is encountered.
+*/
+
 int countColorCodes(const char *format) {
     int count = 0;
     for(int i = 0; *format != '\0'; ++i) {
+        // The beginning of a capture group has been found
         if(*format == '&' && *(format + 1) == '(') {
             while(*format != '\0') {
+                // The end of the capture group has been found
                 if(*format == ')' && *(format + 1) == '&') {
                     ++count;
                     break;
@@ -291,17 +346,15 @@ int countColorCodes(const char *format) {
     return count;
 }
 
-int nextColorCodeStart(const char *format, int start) {
+/*  Returns the end index of the next capture group in the given string,
+    starting from the start index given.
+*/
+
+int nextColorCodeEnd(const char *format, int start) {
     format += start;
     for(int i = start; *format != '\0'; ++i) {
-        if(*format == '&' && *(format + 1) == '(') {
-            while(*format != '\0') {
-                if(*format == ')' && *(format + 1) == '&') { // makes sure that the capture group actually ends
-                    return i;
-                } else {
-                    ++format;
-                }
-            }
+        if(*format == ')' && *(format + 1) == '&') {
+            return ++i;
         } else {
             ++format;
         }
@@ -309,11 +362,27 @@ int nextColorCodeStart(const char *format, int start) {
     return -1;
 }
 
-int nextColorCodeEnd(const char *format, int start) {
+/*  Returns the start index of the next capture group in the given string,
+    starting from the start index given.
+*/
+
+int nextColorCodeStart(const char *format, int start) {
     format += start;
     for(int i = start; *format != '\0'; ++i) {
-        if(*format == ')' && *(format + 1) == '&') {
-            return ++i;
+        if(*format == '&' && *(format + 1) == '(') {
+            // while(*format != '\0') {
+            //     if(*format == ')' && *(format + 1) == '&') {
+            //         return i;
+            //     } else {
+            //         ++format;
+            //     }
+            // }
+            if(nextColorCodeEnd(format, 0) != -1) {
+                return i;
+                // makes sure that the capture group actually ends
+            } else {
+                ++format;
+            }
         } else {
             ++format;
         }
@@ -328,9 +397,9 @@ ColorCode getColorFromCapture(const char *cursor) {
     strncpy(buffer, cursor, i - 1);
     buffer[i - 1] = '\0';
     if(*buffer == '_') {
-        return toBackgroundColorCode(buffer + 1);
+        return parseBackgroundColorCode(buffer + 1);
     } else {
-        return toForegroundColorCode(buffer);
+        return parseForegroundColorCode(buffer);
     }
 }
 
