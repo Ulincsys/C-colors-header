@@ -46,7 +46,7 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_BACKGROUND__ {
 /*  Color escape sequences are contained in the Color_t struct, aliased by their
     name via a struct member. ANSI color codes are escaped with "\x1b[", but for
     simplicity only the integer portion of the code is contained here for colors
-    (as string literals).
+    (as String literals).
 
     https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
 */
@@ -106,7 +106,7 @@ const char *__COLOR_HR_RG__[] = { "black", "red", "green", "yellow", "blue", "ma
 const char *__COLOR_HR_BR__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
 
 /*  Mutable struct type to transport color codes as objects. Struct members "fg"
-    and "bg" are string representations of the respective colors defined by the
+    and "bg" are String representations of the respective colors defined by the
     color code held in the code member.
 */
 
@@ -319,7 +319,7 @@ ColorCode parseColorCodes(const char *foreground, const char *background) {
 }
 
 /*  Counts the number of color code capture groups contained within a character
-    string. Capture groupd begin with a "&(" and end with a ")&", and capture
+    String. Capture groupd begin with a "&(" and end with a ")&", and capture
     groups may not contain other capture groups. Everything within a capture
     group is considered to be a color code. Will parse until a null terminator
     is encountered.
@@ -346,7 +346,7 @@ int countColorCodes(const char *format) {
     return count;
 }
 
-/*  Returns the end index of the next capture group in the given string,
+/*  Returns the end index of the next capture group in the given String,
     starting from the start index given.
 */
 
@@ -362,7 +362,7 @@ int nextColorCodeEnd(const char *format, int start) {
     return -1;
 }
 
-/*  Returns the start index of the next capture group in the given string,
+/*  Returns the start index of the next capture group in the given String,
     starting from the start index given.
 */
 
@@ -390,6 +390,10 @@ int nextColorCodeStart(const char *format, int start) {
     return -1;
 }
 
+/*  Parse and return the color of the next capture group in the String. Does not
+    advance the character pointer or manipulate the String.
+*/
+
 ColorCode getColorFromCapture(const char *cursor) {
     cursor += 2;
     int i = nextColorCodeEnd(cursor, 0);
@@ -403,12 +407,19 @@ ColorCode getColorFromCapture(const char *cursor) {
     }
 }
 
+/*  Variadic color fprintf function with color parsing. Accepts a String with 0
+    or more embedded color capture groups, and a variadic argument list. Expects
+    the VA list to have been initialized with va_start, and will *not* close the
+    list upon completion.
+*/
+
 int cvfprintf(FILE *stream, const char *format, va_list args) {
     int s = nextColorCodeStart(format, 0);
     if(s != -1) {
         const char *cursor = format;
         int index = 0;
-        char buffer[strlen(format) + 10]; // All the color codes are shorter than their captures
+        // All the color codes are shorter than their captures
+        char buffer[strlen(format) + 10];
         // making room for the reset at the end
         while(s != -1) {
             if(s) {
@@ -435,6 +446,9 @@ int cvfprintf(FILE *stream, const char *format, va_list args) {
     return vfprintf(stream, format, args);
 }
 
+/*  Color fprintf function with color parsing. Accepts variable arguments.
+*/
+
 int cfprintf(FILE *stream, const char *format, ...) {
     va_list args;
     va_start(args, format);
@@ -442,6 +456,9 @@ int cfprintf(FILE *stream, const char *format, ...) {
     va_end(args);
     return i;
 }
+
+/*  Color printf function with color parsing. Accepts variable arguments.
+*/
 
 int cprintf(const char *format, ...) {
     va_list args;
