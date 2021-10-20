@@ -1,6 +1,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#ifndef NOCOLOR
+
 // Container for foreground color code aliases
 struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ {
     const char *black;
@@ -55,7 +57,7 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_FOREGROUND__ fg;
     struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT_BACKGROUND__ bg;
     const char *reset;
-} Color_t = {
+} static Color_t = {
     {
         "30",
         "31",
@@ -101,9 +103,9 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     between library functions.
 */
 
-const int __COLOR_COUNT__ = 9;
-const char *__COLOR_HR_RG__[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
-const char *__COLOR_HR_BR__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
+static const int __COLOR_COUNT__ = 9;
+static const char *__COLOR_HR_RG__[] = { "black", "red", "green", "yellow", "blue", "magenta", "cyan", "white", "reset" };
+static const char *__COLOR_HR_BR__[] = { "br_black", "br_red", "br_green", "br_yellow", "br_blue", "br_magenta", "br_cyan", "br_white", "reset" };
 
 /*  Mutable struct type to transport color codes as objects. Struct members "fg"
     and "bg" are String representations of the respective colors defined by the
@@ -122,7 +124,7 @@ typedef struct {
     return -1 if the color name is invalid
 */
 
-int __FIND_COLOR_INDEX__(const char *color) {
+static int __FIND_COLOR_INDEX__(const char *color) {
     for(int i = 0; i < __COLOR_COUNT__; ++i) {
         if(!strcmp(color, __COLOR_HR_RG__[i])) {
             return i;
@@ -135,7 +137,7 @@ int __FIND_COLOR_INDEX__(const char *color) {
     Will return -1 if the color name is invalid
 */
 
-int __FIND_BRIGHT_COLOR_INDEX__(const char *color) {
+static int __FIND_BRIGHT_COLOR_INDEX__(const char *color) {
     for(int i = 0; i < __COLOR_COUNT__; ++i) {
         if(!strcmp(color, __COLOR_HR_BR__[i])) {
             return i;
@@ -149,7 +151,7 @@ int __FIND_BRIGHT_COLOR_INDEX__(const char *color) {
     out.
 */
 
-const char* __GET_CONST_COLOR_CODE__(const char *color, int isFG) {
+static const char* __GET_CONST_COLOR_CODE__(const char *color, int isFG) {
     int colorIndex;
     if((colorIndex = __FIND_COLOR_INDEX__(color)) != -1) {
         if(isFG) {
@@ -248,7 +250,7 @@ const char* __GET_CONST_COLOR_CODE__(const char *color, int isFG) {
     NOCOLOR if it does not exist.
 */
 
-ColorCode parseColorCode(const char *color, int isFG) {
+static ColorCode parseColorCode(const char *color, int isFG) {
     const char *CC = __GET_CONST_COLOR_CODE__(color, isFG);
     if(!CC) {
         return NOCOLOR;
@@ -277,7 +279,7 @@ ColorCode parseColorCode(const char *color, int isFG) {
     NOCOLOR if it does not exist.
 */
 
-ColorCode parseBackgroundColorCode(const char *color) {
+static ColorCode parseBackgroundColorCode(const char *color) {
     return parseColorCode(color, 0);
 }
 
@@ -285,7 +287,7 @@ ColorCode parseBackgroundColorCode(const char *color) {
     NOCOLOR if it does not exist.
 */
 
-ColorCode parseForegroundColorCode(const char *color) {
+static ColorCode parseForegroundColorCode(const char *color) {
     return parseColorCode(color, 1);
 }
 
@@ -293,7 +295,7 @@ ColorCode parseForegroundColorCode(const char *color) {
     background color code defined, or NOCOLOR if either does not exist.
 */
 
-ColorCode parseColorCodes(const char *foreground, const char *background) {
+static ColorCode parseColorCodes(const char *foreground, const char *background) {
     const char *fgcc = __GET_CONST_COLOR_CODE__(foreground, 1);
     const char *bgcc = __GET_CONST_COLOR_CODE__(background, 0);
     if(!fgcc || !bgcc) {
@@ -325,7 +327,7 @@ ColorCode parseColorCodes(const char *foreground, const char *background) {
     is encountered.
 */
 
-int countColorCodes(const char *format) {
+static int countColorCodes(const char *format) {
     int count = 0;
     for(int i = 0; *format != '\0'; ++i) {
         // The beginning of a capture group has been found
@@ -350,7 +352,7 @@ int countColorCodes(const char *format) {
     starting from the start index given.
 */
 
-int nextColorCodeEnd(const char *format, int start) {
+static int nextColorCodeEnd(const char *format, int start) {
     format += start;
     for(int i = start; *format != '\0'; ++i) {
         if(*format == ')' && *(format + 1) == '&') {
@@ -366,7 +368,7 @@ int nextColorCodeEnd(const char *format, int start) {
     starting from the start index given.
 */
 
-int nextColorCodeStart(const char *format, int start) {
+static int nextColorCodeStart(const char *format, int start) {
     format += start;
     for(int i = start; *format != '\0'; ++i) {
         if(*format == '&' && *(format + 1) == '(') {
@@ -394,7 +396,7 @@ int nextColorCodeStart(const char *format, int start) {
     advance the character pointer or manipulate the String.
 */
 
-ColorCode getColorFromCapture(const char *cursor) {
+static ColorCode getColorFromCapture(const char *cursor) {
     cursor += 2;
     int i = nextColorCodeEnd(cursor, 0);
     char buffer[i];
@@ -413,7 +415,7 @@ ColorCode getColorFromCapture(const char *cursor) {
     list upon completion.
 */
 
-int cvfprintf(FILE *stream, const char *format, va_list args) {
+static int cvfprintf(FILE *stream, const char *format, va_list args) {
     int s = nextColorCodeStart(format, 0);
     if(s != -1) {
         const char *cursor = format;
@@ -449,7 +451,7 @@ int cvfprintf(FILE *stream, const char *format, va_list args) {
 /*  Color fprintf function with color parsing. Accepts variable arguments.
 */
 
-int cfprintf(FILE *stream, const char *format, ...) {
+static int cfprintf(FILE *stream, const char *format, ...) {
     va_list args;
     va_start(args, format);
     int i = cvfprintf(stream, format, args);
@@ -460,10 +462,12 @@ int cfprintf(FILE *stream, const char *format, ...) {
 /*  Color printf function with color parsing. Accepts variable arguments.
 */
 
-int cprintf(const char *format, ...) {
+static int cprintf(const char *format, ...) {
     va_list args;
     va_start(args, format);
     int i = cvfprintf(stdout, format, args);
     va_end(args);
     return i;
 }
+
+#endif
