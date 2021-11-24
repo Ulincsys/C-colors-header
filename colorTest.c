@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "colors.h"
+#include <colors.h>
 
 #define Color Color_t
 
