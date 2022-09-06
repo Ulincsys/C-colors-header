@@ -27,3 +27,28 @@ All functions which return a ColorCode struct will return the following value if
 ```
 return (ColorCode){ "\0", "\0", "\0" };
 ```
+
+## Building and Installing
+The included makefile will build, test, install, and uninstall the library. To run a test, execute:
+```
+make test
+```
+in your terminal of choice. You should see the test program run with color!
+
+### Shared Library Installation
+To use this library systemwide, run `sudo make install` (only supported on Linux). For example, let's compile the below program:
+```c
+#include <stdio.h>
+#include <colors.h>
+
+// color-example.c
+
+int main() {
+	// Background color names begin with an underscore
+	cprintf("&(_br_yellow)&&(blue)&Hello World!\n");
+}
+```
+With the shared library installation, we can compile the above using:
+```
+gcc -Wall -Werror color-example.c -lcolors
+```
