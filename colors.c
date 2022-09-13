@@ -328,10 +328,12 @@ int cvfprintf(FILE *stream, const char *format, va_list args) {
         if(remaining) {
             strncpy(buffer + index, cursor, remaining);
             index += remaining;
-        }
-        if(cursor[remaining - 1] == '\n') {
-            --index;
-            remaining = -1;
+
+            // Place the final newline after the reset code
+            if(cursor[remaining - 1] == '\n') {
+                --index;
+                remaining = -1;
+            }
         }
         strncpy(buffer + index, Color_t.reset, strlen(Color_t.reset));
         index += strlen(Color_t.reset);
