@@ -329,8 +329,15 @@ int cvfprintf(FILE *stream, const char *format, va_list args) {
             strncpy(buffer + index, cursor, remaining);
             index += remaining;
         }
+        if(cursor[remaining - 1] == '\n') {
+            --index;
+            remaining = -1;
+        }
         strncpy(buffer + index, Color_t.reset, strlen(Color_t.reset));
         index += strlen(Color_t.reset);
+        if(remaining == -1) {
+            buffer[index++] = '\n';
+        }
         buffer[index] = '\0';
         return vfprintf(stream, buffer, args);
     }
