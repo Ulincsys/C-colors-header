@@ -1,3 +1,5 @@
+# Add the build dir to the shared lib path for testing without installation
+export LD_LIBRARY_PATH := build:$(LD_LIBRARY_PATH)
 
 build:
 	mkdir build
@@ -16,7 +18,8 @@ uninstall:
 	rm /usr/include/colors.h
 
 test: build
-	gcc -Wall -Werror -L:./build/ -o ./build/color-test.out colorTest.c -lcolors
+	# Link `colorTest.c` with the dynamic lib compiled in build:
+	gcc -Wall -Werror -L build/ -o build/color-test.out colorTest.c -lcolors
 	./build/color-test.out
 
 clean:
