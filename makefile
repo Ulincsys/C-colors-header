@@ -3,7 +3,7 @@ export LD_LIBRARY_PATH := build:$(LD_LIBRARY_PATH)
 
 build:
 	mkdir build
-	gcc -c -Wall -Werror -fpic --std=c11 -o build/colors.o colors.c
+	gcc -c -Wall -Werror -Wpedantic -fpic --std=c11 -o build/colors.o colors.c
 	gcc -shared -o build/libcolors.so build/colors.o
 
 install: build
@@ -19,7 +19,7 @@ uninstall:
 
 test: build
 	# Link `colorTest.c` with the dynamic lib compiled in build:
-	gcc -Wall -Werror -L build/ -o build/color-test.out colorTest.c -lcolors
+	gcc -Wall -Werror -Wpedantic --std=c11 -L build/ -o build/color-test.out colorTest.c -lcolors
 	./build/color-test.out
 
 clean:

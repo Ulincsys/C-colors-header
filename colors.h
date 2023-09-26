@@ -99,7 +99,7 @@ struct __ANSI_COLOR_ESCAPE_TYPES_STRUCT__ {
     "\x1b[0m" // resets BG and FG
 };
 
-#define ANSI_COLOR_COUNT 9;
+#define ANSI_COLOR_COUNT 9
 
 /*  Mutable struct type to transport color codes as objects. Struct members "fg"
     and "bg" are String representations of the respective colors defined by the
